@@ -3,8 +3,10 @@ from utils import read_file, preprocess
 from metrics import compute_metrics
 from scoring import calculate_score
 from suggestions import generate_suggestions
+from function_analysis import analyze_functions, find_worst_function
 
-def print_report(filepath,metrics, score, level, advice):
+
+def print_report(filepath,metrics, score, level, advice,func_results=None, worst=None):
     print("\n==============================")
     print(" Code Complexity Report")
     print("==============================\n")
@@ -26,7 +28,26 @@ def print_report(filepath,metrics, score, level, advice):
         for tip in advice:
             print(f" -{tip}")
             
-    print("\n==============================\n")
+    func_results = sorted(func_results, key=lambda x: x["score"], reverse=True)
+
+    if func_results is not None:
+        print("\nFunction Breakdown:")
+        print("--------------------------------")
+
+        if not func_results:
+            print(" No functions detected.")
+        else:
+            for f in func_results:
+                print(f"{f['name']:15} → {f['level']} ({f['score']})")
+
+                if f["reasons"]:
+                    print("   reasons:")
+                    for r in f["reasons"]:
+                        print(f"    - {r}")
+
+    if worst:
+        print(f"\nWorst function: {worst['name']} ({worst['score']})")
+
 
 def main():
     if len(sys.argv)!=2:#for terminal correctness of 2 vectors one analyze.py and other the file that needs to be analyzed
@@ -49,8 +70,14 @@ def main():
     # Step5: suggestions
     advice=generate_suggestions(metrics)
 
-    # Step6: print
-    print_report(filepath,metrics,score,level,advice)
+    # Step6: function analysis
+    func_results = analyze_functions(clean_code)
+    worst = find_worst_function(func_results)
+
+    # Step7: print
+    print_report(filepath,metrics,score,level,advice,func_results,worst)
+
+    
 
 if __name__=="__main__":
     main()

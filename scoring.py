@@ -13,13 +13,14 @@ def calculate_score(metrics):
         loc * 0.03
     )
 
-    if score < 10:
+    if score < 5:
         level = "Easy"
-    elif score < 20:
+    elif score < 12:
         level = "Moderate"
-    elif score < 35:
+    elif score < 20:
         level = "Hard"
     else:
         level = "Very Hard"
+
 
     return round(score, 2), level
